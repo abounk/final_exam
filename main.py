@@ -7,11 +7,20 @@ from gamelib import Sprite, GameApp, Text
 
 from consts import *
 
-class SlowFruit(Sprite):
-    def __init__(self, app, x, y):
-        super().__init__(app, 'images/apple.png', x, y)
+
+class Fruit(Sprite):
+    POINTS = 1
+
+    def __init__(self, app, x, y, images):
+        super().__init__(app, images, x, y)
 
         self.app = app
+
+    def update(self):
+        pass
+
+
+class SlowFruit(Fruit):
 
     def update(self):
         self.y += FRUIT_SLOW_SPEED
@@ -20,11 +29,8 @@ class SlowFruit(Sprite):
             self.to_be_deleted = True
 
 
-class FastFruit(Sprite):
-    def __init__(self, app, x, y):
-        super().__init__(app, 'images/banana.png', x, y)
-
-        self.app = app
+class FastFruit(Fruit):
+    POINTS = 2
 
     def update(self):
         self.y += FRUIT_FAST_SPEED
@@ -33,12 +39,11 @@ class FastFruit(Sprite):
             self.to_be_deleted = True
 
 
-class SlideFruit(Sprite):
-    def __init__(self, app, x, y):
-        super().__init__(app, 'images/cherry.png', x, y)
+class SlideFruit(Fruit):
+    POINTS = 3
 
-        self.app = app
-        self.direction = randint(0,1)*2 - 1
+    def init_element(self):
+        self.direction = randint(0, 1)*2 - 1
 
     def update(self):
         self.y += FRUIT_FAST_SPEED
@@ -48,12 +53,11 @@ class SlideFruit(Sprite):
             self.to_be_deleted = True
 
 
-class CurvyFruit(Sprite):
-    def __init__(self, app, x, y):
-        super().__init__(app, 'images/pear.png', x, y)
+class CurvyFruit(Fruit):
+    POINTS = 3
 
-        self.app = app
-        self.t = randint(0,360) * 2 * math.pi / 360
+    def init_element(self):
+        self.t = randint(0, 360) * 2 * math.pi / 360
 
     def update(self):
         self.y += FRUIT_SLOW_SPEED * 1.2
@@ -82,7 +86,7 @@ class Basket(Sprite):
     def check_collision(self, fruit):
         if self.distance_to(fruit) <= BASKET_CATCH_DISTANCE:
             fruit.to_be_deleted = True
-            self.app.score += 1
+            self.app.score += fruit.POINTS
             self.app.update_score()
 
 
@@ -103,13 +107,13 @@ class BasketGame(GameApp):
             p = random()
             x = randint(50, CANVAS_WIDTH - 50)
             if p <= 0.3:
-                new_fruit = SlowFruit(self, x, 0)
+                new_fruit = SlowFruit(self, x, 0, 'images/apple.png')
             elif p <= 0.6:
-                new_fruit = FastFruit(self, x, 0)
+                new_fruit = FastFruit(self, x, 0, 'images/banana.png')
             elif p <= 0.8:
-                new_fruit = SlideFruit(self, x, 0)
+                new_fruit = SlideFruit(self, x, 0, 'images/cherry.png')
             else:
-                new_fruit = CurvyFruit(self, x, 0)
+                new_fruit = CurvyFruit(self, x, 0, 'images/pear.png')
 
             self.fruits.append(new_fruit)
 
@@ -140,12 +144,12 @@ class BasketGame(GameApp):
             self.basket.direction = BASKET_LEFT
         elif event.keysym == 'Right':
             self.basket.direction = BASKET_RIGHT
-    
+
 
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Basket Fighter")
- 
+
     # do not allow window resizing
     root.resizable(False, False)
     app = BasketGame(root, CANVAS_WIDTH, CANVAS_HEIGHT, UPDATE_DELAY)
